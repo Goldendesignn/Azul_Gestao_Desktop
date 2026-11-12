@@ -1,6 +1,6 @@
 :root {
   color: #11213d;
-  background: #eef4fc;
+  background: #edf3fc;
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -8,26 +8,57 @@
 
 body { margin: 0; min-width: 320px; }
 
-.app-shell { max-width: 920px; margin: 0 auto; padding: 72px 24px; }
+.app-shell { max-width: 780px; margin: 0 auto; padding: 56px 24px; }
 
-.hero { padding: 56px; color: #ffffff; background: #0757d9; border-radius: 8px; box-shadow: 0 18px 45px rgba(7, 87, 217, .22); }
+.setup-card, .workspace-card { padding: 42px; background: #ffffff; border: 1px solid #d3dfef; border-radius: 8px; box-shadow: 0 18px 45px rgba(29, 71, 133, .12); }
 
-.eyebrow { display: block; font-weight: 700; font-size: 12px; letter-spacing: .8px; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: #0757d9; }
 
-h1 { max-width: 660px; margin: 14px 0; font-size: 48px; line-height: 1.05; }
+.brand span { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; background: #0757d9; border-radius: 8px; }
 
-p { max-width: 620px; font-size: 18px; line-height: 1.6; }
+.eyebrow { display: block; margin: 32px 0 6px; color: #0757d9; font-weight: 700; font-size: 12px; letter-spacing: .8px; }
+
+h1 { max-width: 660px; margin: 8px 0; font-size: 42px; line-height: 1.1; }
+
+.lead { max-width: 620px; margin: 0 0 30px; color: #53647e; font-size: 17px; line-height: 1.6; }
+
+.form-section { padding: 24px 0; border-top: 1px solid #dce5f1; }
+
+.form-section h2 { margin: 0; font-size: 19px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+label { display: grid; gap: 7px; margin-top: 16px; font-weight: 700; font-size: 14px; }
+
+input { width: 100%; min-height: 46px; padding: 10px 12px; color: #11213d; background: #fff; border: 1px solid #b9c9dd; border-radius: 6px; font: inherit; font-weight: 400; }
+
+input:focus { outline: 3px solid rgba(7, 87, 217, .18); border-color: #0757d9; }
+
+.optional, .hint { color: #63738b; font-weight: 400; }
+
+.hint { margin: 6px 0 0; font-size: 14px; line-height: 1.4; }
+
+button { width: 100%; min-height: 50px; padding: 12px 18px; color: #fff; background: #0757d9; border: 0; border-radius: 6px; font: inherit; font-weight: 800; cursor: pointer; }
+
+button:hover { background: #0648b3; }
+
+button:disabled { cursor: wait; opacity: .65; }
+
+.form-message { min-height: 22px; margin: 0 0 16px; color: #52637d; font-size: 14px; }
 
 .status { display: inline-block; margin-top: 14px; padding: 12px 16px; color: #073777; background: #e6f1ff; border-radius: 6px; font-weight: 700; }
 
-.next-steps { margin-top: 24px; padding: 28px 32px; background: #ffffff; border: 1px solid #cbdaf1; border-radius: 8px; }
+.next-steps { margin-top: 28px; padding: 24px 28px; background: #f8fbff; border: 1px solid #cbdaf1; border-radius: 8px; }
 
 .next-steps h2 { margin-top: 0; }
 
 .next-steps li { padding: 8px 0; }
 
+.is-hidden { display: none; }
+
 @media (max-width: 640px) {
   .app-shell { padding: 32px 16px; }
-  .hero { padding: 32px 24px; }
+  .setup-card, .workspace-card { padding: 30px 22px; }
   h1 { font-size: 36px; }
+  .form-grid { grid-template-columns: 1fr; gap: 0; }
 }
