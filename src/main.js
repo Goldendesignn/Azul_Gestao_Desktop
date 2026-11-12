@@ -1,11 +1,14 @@
 import "./style.css";
 
 const setupView = document.querySelector("#setup-view");
+const loginView = document.querySelector("#login-view");
 const workspaceView = document.querySelector("#workspace-view");
 const form = document.querySelector("#setup-form");
+const loginForm = document.querySelector("#login-form");
 const message = document.querySelector("#form-message");
 const submitButton = document.querySelector("#setup-submit");
 const workspaceSummary = document.querySelector("#workspace-summary");
+const loginMessage = document.querySelector("#login-message");
 
 const randomId = () => crypto.randomUUID();
 
@@ -21,22 +24,53 @@ async function passwordHash(password) {
   return `pbkdf2-sha256$600000$${encode(salt)}$${encode(bits)}`;
 }
 
+async function passwordMatches(password, storedValue) {
+  const [algorithm, iterations, encodedSalt, expected] = storedValue.split("$");
+  if (algorithm !== "pbkdf2-sha256" || !iterations || !encodedSalt || !expected) return false;
+  const decode = (value) => Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const output = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", salt: decode(encodedSalt), iterations: Number(iterations), hash: "SHA-256" }, key, 256));
+  const target = decode(expected);
+  if (output.length !== target.length) return false;
+  return output.reduce((match, byte, index) => match & (byte === target[index] ? 1 : 0), 1) === 1;
+}
+
 async function openDatabase() {
   const { default: Database } = await import("@tauri-apps/plugin-sql");
   return Database.load("sqlite:azul.db");
 }
 
-function showWorkspace(companyName) {
+function showLogin(companyName) {
   setupView.classList.add("is-hidden");
+  workspaceView.classList.add("is-hidden");
+  loginView.classList.remove("is-hidden");
+  document.querySelector("#login-company").textContent = `Entre para gerir ${companyName} neste computador.`;
+}
+
+async function showWorkspace(user, companyName) {
+  const database = await openDatabase();
+  const today = new Date().toISOString().slice(0, 10);
+  const [products, sales, expenses] = await Promise.all([
+    database.select("SELECT count(*) AS total FROM products WHERE is_active = 1"),
+    database.select(`SELECT count(*) AS total, coalesce(sum(total), 0) AS amount FROM sales WHERE substr(created_at, 1, 10) = '${today}'`),
+    database.select(`SELECT coalesce(sum(amount), 0) AS amount FROM expenses WHERE expense_date = '${today}'`)
+  ]);
+  setupView.classList.add("is-hidden");
+  loginView.classList.add("is-hidden");
   workspaceView.classList.remove("is-hidden");
-  workspaceSummary.textContent = `${companyName} ja tem a sua base local preparada.`;
+  document.querySelector("#workspace-user").textContent = user.full_name;
+  workspaceSummary.textContent = `${companyName} esta a trabalhar com dados guardados apenas neste computador.`;
+  document.querySelector("#metric-products").textContent = products[0]?.total ?? 0;
+  document.querySelector("#metric-sales").textContent = `${Number(sales[0]?.amount ?? 0).toLocaleString("pt-AO")} Kz`;
+  document.querySelector("#metric-sales-count").textContent = `${sales[0]?.total ?? 0} vendas`;
+  document.querySelector("#metric-expenses").textContent = `${Number(expenses[0]?.amount ?? 0).toLocaleString("pt-AO")} Kz`;
 }
 
 async function loadInstallation() {
   try {
     const database = await openDatabase();
     const rows = await database.select("SELECT value FROM app_settings WHERE key = 'company_name'");
-    if (rows[0]?.value) showWorkspace(rows[0].value);
+    if (rows[0]?.value) showLogin(rows[0].value);
   } catch {
     // The browser preview has no native SQLite access. The installed desktop app does.
     message.textContent = "Pre-visualizacao aberta. A base local sera criada na aplicacao Windows.";
@@ -72,7 +106,7 @@ form.addEventListener("submit", async (event) => {
     }
     await database.execute(`INSERT INTO local_users (id, full_name, username, password_hash, role) VALUES ('${randomId()}', '${escapeSql(adminName)}', '${escapeSql(adminUsername)}', '${escapeSql(password)}', 'administrator')`);
     await database.execute("COMMIT");
-    showWorkspace(companyName);
+    showLogin(companyName);
   } catch (error) {
     try {
       const database = await openDatabase();
@@ -81,6 +115,35 @@ form.addEventListener("submit", async (event) => {
     message.textContent = "Nao foi possivel criar a empresa. Confirme o nome de utilizador e tente novamente.";
     submitButton.disabled = false;
   }
+});
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!loginForm.reportValidity()) return;
+  const username = document.querySelector("#login-username").value.trim().toLowerCase();
+  const password = document.querySelector("#login-password").value;
+  const loginButton = document.querySelector("#login-submit");
+  loginButton.disabled = true;
+  loginMessage.textContent = "A verificar acesso local...";
+  try {
+    const database = await openDatabase();
+    const users = await database.select(`SELECT id, full_name, password_hash FROM local_users WHERE username = '${escapeSql(username)}' AND is_active = 1 LIMIT 1`);
+    if (!users[0] || !(await passwordMatches(password, users[0].password_hash))) throw new Error("invalid-login");
+    const company = await database.select("SELECT value FROM app_settings WHERE key = 'company_name'");
+    document.querySelector("#login-password").value = "";
+    await showWorkspace(users[0], company[0]?.value ?? "a sua empresa");
+  } catch {
+    loginMessage.textContent = "Nome de utilizador ou palavra-passe incorretos.";
+    loginButton.disabled = false;
+  }
+});
+
+document.querySelector("#logout-button").addEventListener("click", async () => {
+  const database = await openDatabase();
+  const company = await database.select("SELECT value FROM app_settings WHERE key = 'company_name'");
+  loginForm.reset();
+  loginMessage.textContent = "Sessao local terminada.";
+  showLogin(company[0]?.value ?? "a sua empresa");
 });
 
 loadInstallation();

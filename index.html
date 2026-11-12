@@ -36,20 +36,33 @@
         </form>
       </section>
 
+      <section class="setup-card is-hidden" id="login-view" aria-labelledby="login-title">
+        <div class="brand"><span>A</span> Azul Gestao</div>
+        <p class="eyebrow">ACESSO LOCAL</p>
+        <h1 id="login-title">Bem-vindo de volta.</h1>
+        <p class="lead" id="login-company"></p>
+        <form id="login-form">
+          <label>Nome de utilizador<input id="login-username" autocomplete="username" required /></label>
+          <label>Palavra-passe<input id="login-password" type="password" autocomplete="current-password" required /></label>
+          <p class="form-message" id="login-message" role="status"></p>
+          <button type="submit" id="login-submit">Entrar no Azul</button>
+        </form>
+      </section>
+
       <section class="workspace-card is-hidden" id="workspace-view" aria-labelledby="workspace-title">
         <div class="brand"><span>A</span> Azul Gestao Desktop</div>
-        <p class="eyebrow">BASE LOCAL ATIVA</p>
-        <h1 id="workspace-title">A sua empresa esta pronta.</h1>
+        <button class="logout" id="logout-button" type="button">Sair</button>
+        <p class="eyebrow">PAINEL LOCAL</p>
+        <h1 id="workspace-title">Bom trabalho, <span id="workspace-user"></span>.</h1>
         <p class="lead" id="workspace-summary"></p>
-        <div class="status" data-ready="true">Dados guardados neste computador. Nenhuma ligacao a Supabase e necessaria.</div>
+        <div class="dashboard-grid">
+          <article class="metric"><span>Produtos</span><strong id="metric-products">0</strong><small>Registados localmente</small></article>
+          <article class="metric"><span>Vendas hoje</span><strong id="metric-sales">0 Kz</strong><small id="metric-sales-count">0 vendas</small></article>
+          <article class="metric"><span>Despesas hoje</span><strong id="metric-expenses">0 Kz</strong><small>Saidas registadas</small></article>
+        </div>
         <section class="next-steps" aria-labelledby="next-steps-title">
-          <h2 id="next-steps-title">O que vem a seguir</h2>
-          <ol>
-            <li>Entrar com o administrador local</li>
-            <li>Adicionar produtos e stock</li>
-            <li>Registar vendas, compras e despesas</li>
-            <li>Criar copias de seguranca automaticas</li>
-          </ol>
+          <h2 id="next-steps-title">Azul esta a funcionar offline</h2>
+          <p>Os proximos modulos serao Produtos e Stock, Nova Venda e Copias de seguranca.</p>
         </section>
       </section>
     </main>
